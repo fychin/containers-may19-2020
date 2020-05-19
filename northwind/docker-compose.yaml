@@ -1,0 +1,28 @@
+version: '3'
+
+volumes:
+  vol:
+
+networks: 
+  nw-net:
+
+services: 
+  nwdb:
+    image: fychindev/northwind-db:v3
+    build: 
+      context: ./database
+    volumes: 
+    - vol=/var/lib/mysql
+    networks:
+    - nw-net
+  
+  nwapp:
+    image: fychindev/nwapp:v2
+    build: 
+      context: ./server
+    environment:
+    - DB_HOST=nwdb
+    ports:
+    - 8080:3000
+    networks: 
+    - nw-net

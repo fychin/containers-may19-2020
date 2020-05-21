@@ -1,0 +1,106 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nwapp-cm
+  labels:
+    app: northwind
+data:
+  DB_USER: root
+  DB_HOST: nwdb-svc.nwapp.svc.cluster.local
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nwappv2-deploy
+  labels:
+    app: northwind
+
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nwappv2-pod
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  template:
+    metadata:
+      name: nwappv2-pod
+      labels:
+        app: nwappv2-pod
+    spec:
+      containers:
+      - name: nwapp-container
+        image: stackupiss/northwind-app:v2
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: APP_PORT
+          value: "3000"
+        - name: INSTANCE_IP_ADDRESS
+          valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+        - name: DB_USER
+          valueFrom:
+              configMapKeyRef:
+                name: nwapp-cm
+                key: DB_USER
+        - name: DB_HOST
+          valueFrom:
+              configMapKeyRef:
+                name: nwapp-cm
+                key: DB_HOST
+        - name: DB_PASSWORD
+          valueFrom:
+              secretKeyRef:
+                name: nwdb-secret
+                key: MYSQL_ROOT_PASSWORD
+        ports:
+        - name: http-port
+          containerPort: 3000
+        livenessProbe:
+            httpGet:
+              port: http-port
+              path: /health
+            initialDelaySeconds: 5
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 1
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nwapp-svc
+  labels:
+    app: northwind
+spec:
+  type: ClusterIP
+  selector:
+    app: nwappv2-pod
+  ports:
+  - name: app-port
+    port: 80 
+    targetPort: http-port
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: nwapp-ingress
+  labels:
+    app: northwind
+  annotations:
+    # use the shared ingress-nginx
+    kubernetes.io/ingress.class: "nginx"
+spec:
+  rules:
+  - host: "nwapp.167.172.6.182.nip.io"
+    http:
+        paths:
+        - path: /
+          backend:
+            serviceName: nwapp-svc
+            servicePort: app-port

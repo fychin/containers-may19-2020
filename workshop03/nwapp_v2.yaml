@@ -74,7 +74,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: nwapp-svc
+  name: nwappv2-svc
   labels:
     app: northwind
 spec:
@@ -95,6 +95,7 @@ metadata:
   annotations:
     # use the shared ingress-nginx
     kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
 spec:
   rules:
   - host: "nwapp.167.172.6.182.nip.io"
@@ -102,5 +103,5 @@ spec:
         paths:
         - path: /
           backend:
-            serviceName: nwapp-svc
+            serviceName: nwappv2-svc
             servicePort: app-port

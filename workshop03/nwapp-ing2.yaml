@@ -8,17 +8,19 @@ metadata:
   annotations:
     # use the shared ingress-nginx
     kubernetes.io/ingress.class: "nginx"
-    nginx.ingress.kubernetes.io/rewrite-target: /$2
 spec:
   rules:
-  - host: "nwapp.167.172.6.182.nip.io"
+  - host: "v1.nwapp.167.172.6.182.nip.io"
     http:
         paths:
-        - path: /v1(/|$)(.*)
+        - path: /
           backend:
             serviceName: nwapp-svc
             servicePort: 80
-        - path: /v2(/|$)(.*)
+  - host: "v2.nwapp.167.172.6.182.nip.io"
+    http:
+        paths:
+        - path: /
           backend:
             serviceName: nwappv2-svc
             servicePort: 80

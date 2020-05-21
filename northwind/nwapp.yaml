@@ -21,6 +21,11 @@ spec:
   selector:
     matchLabels:
       app: nwapp-pod
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   template:
     metadata:
       name: nwapp-pod

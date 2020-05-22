@@ -1,5 +1,6 @@
 ---
 # fortune deployment with istio sidecar injected
+# Istio Sidecar injection on demand: `istioctl kube-inject -f this-deployment.yaml > save-to-deployment.yaml`
 apiVersion: apps/v1
 kind: Deployment
 metadata:

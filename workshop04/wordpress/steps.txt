@@ -1,0 +1,21 @@
+Wordpress SaaS Package Deployment Workflow
+
+1. Create a namespace for the client (tenancy isolation)
+`kubectl create ns wpapp`
+
+2. Assuming that 'mysql-operator' is deployed, write the 'wp-db-cluster.yaml' and deploy it.
+`kubectl apply -f wp-db-cluster.yaml -n wpapp --record`
+
+3. Wait for the db-cluster deployment to complete. 
+Run `kubectl get svc,mysql -n wpapp` to check, once ready, get the service name
+of the mysql-master ClusterIP service. (needed as db-host for wordpress app)
+
+4. Assuming that Istio is deployed, enable Istio's sidecar-injection.
+`kubectl label ns/wpapp istio-injection=enabled`  (for istio tracking/dashboard metrics)
+
+5. Configure wordpress app env variables and deploy wordpress deployment 'wp-app-deploy.yaml'.
+Set 'WORDPRESS_DB_HOST'='wpdb-mysql-master.wpapp.svc.cluster.local'
+`kubectl apply -f wp-app-deploy.yaml -n wpapp --record`
+
+6. Assuming that nginx-ingress is deployed, deploy 'wp-ing.yaml' with configured client domain.
+`kubectl apply -f wp-ing.yaml -n wpapp --record`

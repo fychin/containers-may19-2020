@@ -1,0 +1,47 @@
+--- # Deployment: Wodpress
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-wordpress-deploy
+  labels:
+    app: wordpress
+spec:
+  selector:
+    matchLabels:
+      app: my-wordpress-pod
+  template:
+    metadata:
+      labels:
+        name: my-wordpress-pod
+        app: my-wordpress-pod
+    spec:
+      containers:
+      - name: wordpress-container
+        image: wordpress:latest
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: WORDPRESS_DB_HOST
+          value: wpdb-mysql-master.wpapp.svc.cluster.local
+        - name: WORDPRESS_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+                name: my-wp-secret
+                key: ROOT_PASSWORD
+        ports:
+        - name: wp-port
+          containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wp-svc
+  labels:
+    app: wordpress
+spec:
+  type: ClusterIP
+  selector:
+    app: my-wordpress-pod
+  ports:
+  - name: app-port
+    port: 80 
+    targetPort: wp-port

@@ -1,0 +1,27 @@
+--- # Database Secret
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-wp-secret
+  labels:
+    app: wordpress
+data:
+  ROOT_PASSWORD: Y2hlY2tpdA==
+
+--- # Database cluster
+apiVersion: mysql.presslabs.org/v1alpha1
+kind: MysqlCluster
+metadata:
+  name: wpdb
+  labels:
+    app: wordpress
+spec:
+  replicas: 2
+  secretName: my-wp-secret
+  persistentVolumeClaim:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+    storageClassName: do-block-storage

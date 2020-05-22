@@ -1,0 +1,19 @@
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: wpapp-ingress
+  labels:
+    app: wordpress
+  annotations:
+    # use the shared ingress-nginx
+    kubernetes.io/ingress.class: "nginx"
+spec:
+  rules:
+  - host: "acme.167.172.4.98.nip.io"
+    http:
+        paths:
+        - path: /
+          backend:
+            serviceName: wp-svc
+            servicePort: 80
